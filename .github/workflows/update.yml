@@ -47,11 +47,10 @@ Danh sách này được cập nhật hàng ngày bằng GitHub Actions.
 EOF
 
     - name: Commit & push merged.txt và README.md nếu thay đổi
-      run: |
-        git config user.name "github-actions"
-        git config user.email "actions@github.com"
-        git add merged.txt README.md
-        git diff --cached --quiet || git commit -m "Auto-update on $(date -u +'%Y-%m-%d')"
-        git push
-      env:
-        TZ: UTC
+  run: |
+    git config user.name "github-actions"
+    git config user.email "actions@github.com"
+    git add merged.txt README.md || true
+    git diff --cached --quiet || git commit -m "Auto-update merged.txt $(TZ=Asia/Ho_Chi_Minh date +'%Y-%m-%d')"
+    git push
+- Cập nhật lần cuối: \`$(TZ=Asia/Ho_Chi_Minh date +'%Y-%m-%d %H:%M GMT+7')\`
