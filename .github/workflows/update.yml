@@ -2,55 +2,28 @@ name: Auto-update merged adblock list
 
 on:
   schedule:
-    - cron: '0 23 * * *'  # Chạy mỗi ngày lúc 00:00 UTC
-  workflow_dispatch:       # Cho phép trigger thủ công (sẽ hiển thị nút "Run workflow")
+    - cron: '0 23 * * *'
+  workflow_dispatch:
 
 jobs:
   update:
     runs-on: ubuntu-latest
-
     steps:
-    - name: Checkout repository
-      uses: actions/checkout@v3
+      - name: Checkout repo
+        uses: actions/checkout@v3
 
-    - name: Set up Python
-      uses: actions/setup-python@v4
-      with:
-        python-version: '3.x'
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
 
-    - name: Install required packages
-      run: pip install requests
+      - name: Run merge script
+        run: python merge.py
 
-    - name: Run merge.py script
-      run: python merge.py
-
-    - name: Count lines and create README.md
-      run: |
-        line_count=$(wc -l < merged.txt)
-        echo "Total lines: $line_count"
-
-        cat <<EOF > README.md
-# 🛡️ Adblock Merged List
-
-Repo này tự động tổng hợp nhiều danh sách chặn quảng cáo vào một file duy nhất: \`merged.txt\`.
-
-## 📦 Link tải trực tiếp (RAW)
-➡️ [Xem/tải merged.txt](https://raw.githubusercontent.com/mttranvn/adblock-merged-list/main/merged.txt)
-
-## 📊 Thống kê
-- Tổng số dòng trong danh sách: **$line_count**
-- Cập nhật lần cuối: \`$(date -u +'%Y-%m-%d %H:%M UTC')\`
-
-## 🔁 Cập nhật tự động
-Danh sách này được cập nhật hàng ngày bằng GitHub Actions.
-EOF
-
-    - name: Commit & Push if changed
-      run: |
-        git config user.name "github-actions"
-        git config user.email "actions@github.com"
-        git add merged.txt README.md
-        git diff --cached --quiet || git commit -m "Auto-update on $(date -u +'%Y-%m-%d')"
-        git push
-      env:
-        TZ: UTC
+      - name: Commit changes
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add merged.txt
+          git commit -m "Update merged.txt" || echo "No changes to commit"
+          git push
