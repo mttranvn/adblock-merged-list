@@ -1,4 +1,7 @@
+# merge.py
+
 import requests
+import sys
 
 urls = [
     "https://github.com/bigdargon/hostsVN/raw/master/hosts",
@@ -16,19 +19,31 @@ urls = [
 ]
 
 merged = set()
+had_error = False
 
 for url in urls:
     try:
-        resp = requests.get(url, timeout=20)
+        print(f"🔗 Fetching: {url}")
+        resp = requests.get(url, timeout=30)
         resp.raise_for_status()
         for line in resp.text.splitlines():
             line = line.strip()
             if line and not line.startswith(('!', '#')):
                 merged.add(line)
     except Exception as e:
-        print(f"Error fetching {url}: {e}")
+        print(f"⚠️ Error fetching {url}: {e}")
+        had_error = True
+
+if not merged:
+    print("❌ No data fetched. Exiting with error.")
+    sys.exit(1)
 
 with open("merged.txt", "w", encoding="utf-8") as out:
     out.write("! Merged Adblock list – updated daily\n")
     for item in sorted(merged):
         out.write(item + "\n")
+
+print(f"✅ Successfully wrote {len(merged)} entries to merged.txt")
+
+# Nếu chỉ một vài lỗi, vẫn coi là thành công
+sys.exit(0)
