@@ -1,33 +1,38 @@
-name: Auto‑update merged adblock list
+name: Auto-update merged adblock list
 
 on:
   schedule:
-    - cron: '0 23 * * *'  # Chạy vào 00:00 UTC mỗi ngày
-  workflow_dispatch:    # Cho phép trigger thủ công
+    - cron: '0 23 * * *'  # Chạy mỗi ngày lúc 6h sáng GMT+7 (tức 23h UTC)
+  workflow_dispatch:      # Cho phép chạy thủ công
 
 jobs:
   update:
     runs-on: ubuntu-latest
 
     steps:
-    - name: Checkout repo
+    - name: Checkout repository
       uses: actions/checkout@v3
 
-    - name: Setup Python
+    - name: Set up Python
       uses: actions/setup-python@v4
       with:
         python-version: '3.x'
 
-    - name: Install requests
+    - name: Install dependencies
       run: pip install requests
 
-    - name: Run merge script
+    - name: Run merge.py script
       run: python merge.py
 
-    - name: Đếm số dòng và tạo README.md
+    - name: Count lines & generate README.md
       run: |
+        if [ ! -f merged.txt ]; then
+          echo "❌ File merged.txt không tồn tại. merge.py có thể đã bị lỗi."
+          exit 1
+        fi
+
         line_count=$(wc -l < merged.txt)
-        echo "Tổng số dòng trong merged.txt: $line_count"
+        echo "Tổng số dòng: $line_count"
 
         cat <<EOF > README.md
 # 🛡️ Adblock Merged List
@@ -39,18 +44,17 @@ Repo này tự động tổng hợp nhiều danh sách chặn quảng cáo vào 
 
 ## 📊 Thống kê
 - Tổng số dòng trong danh sách: **$line_count**
-- Cập nhật lần cuối: \`$(date -u +'%Y-%m-%d %H:%M UTC')\`
+- Cập nhật lần cuối: \`$(TZ=Asia/Ho_Chi_Minh date +'%Y-%m-%d %H:%M GMT+7')\`
 
 ## 🔁 Cập nhật tự động
 Danh sách này được cập nhật hàng ngày bằng GitHub Actions.
 
 EOF
 
-    - name: Commit & push merged.txt và README.md nếu thay đổi
-  run: |
-    git config user.name "github-actions"
-    git config user.email "actions@github.com"
-    git add merged.txt README.md || true
-    git diff --cached --quiet || git commit -m "Auto-update merged.txt $(TZ=Asia/Ho_Chi_Minh date +'%Y-%m-%d')"
-    git push
-- Cập nhật lần cuối: \`$(TZ=Asia/Ho_Chi_Minh date +'%Y-%m-%d %H:%M GMT+7')\`
+    - name: Commit & push if changed
+      run: |
+        git config user.name "github-actions"
+        git config user.email "actions@github.com"
+        git add merged.txt README.md
+        git diff --cached --quiet || git commit -m "Auto-update on $(TZ=Asia/Ho_Chi_Minh date +'%Y-%m-%d %H:%M')"
+        git push
