@@ -16,7 +16,7 @@ https://raw.githubusercontent.com/mttranvn/adblock-merged-list/main/merged.txt
 
 ## 🔁 Cập nhật
 
-- Tự động cập nhật mỗi ngày lúc **00:00 UTC**
+- Tự động cập nhật mỗi ngày lúc **23:00 UTC**
 - Có thể chạy thủ công trong tab **Actions**
 
 ---
