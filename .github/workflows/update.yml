@@ -1,0 +1,35 @@
+name: Auto‑update merged adblock list
+
+on:
+  schedule:
+    - cron: '0 23 * * *'  # Chạy vào 00:00 UTC mỗi ngày
+  workflow_dispatch:    # Cho phép trigger thủ công
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout repo
+      uses: actions/checkout@v3
+
+    - name: Setup Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.x'
+
+    - name: Install requests
+      run: pip install requests
+
+    - name: Run merge script
+      run: python merge.py
+
+    - name: Commit & push merge.txt
+      run: |
+        git config user.name "github-actions"
+        git config user.email "actions@github.com"
+        git add merged.txt
+        git commit -m "Auto-update merged.txt $(date -u +'%Y-%m-%d')"
+        git push
+      env:
+        TZ: UTC
